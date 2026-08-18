@@ -78,7 +78,7 @@
         }
 
         .container {
-            width: min(680px, 100%);
+            width: min(720px, 100%);
             background: linear-gradient(180deg, rgba(255, 250, 238, .97), rgba(251, 241, 220, .97));
             border-radius: 26px;
             padding: 40px 34px 34px;
@@ -88,6 +88,83 @@
             box-shadow: 0 30px 90px rgba(30, 8, 4, .55), 0 0 0 1px rgba(217, 164, 65, .4);
             border: 3px solid transparent;
             background-clip: padding-box;
+        }
+
+        /* DEVOTIONAL SHRINE GALLERY GRID */
+        .devotional-shrine-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 16px 0 22px;
+        }
+
+        .shrine-card {
+            background: rgba(255, 248, 235, 0.85);
+            border: 1.5px solid rgba(217, 164, 65, 0.5);
+            border-radius: 16px;
+            padding: 8px 6px 10px;
+            text-align: center;
+            box-shadow: 0 6px 16px rgba(60, 20, 10, 0.08);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(4px);
+        }
+
+        .shrine-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(226, 113, 29, 0.25);
+            border-color: var(--saffron);
+            background: #ffffff;
+        }
+
+        .shrine-img-wrap {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid var(--gold);
+            margin-bottom: 6px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .shrine-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .shrine-card:hover .shrine-img {
+            transform: scale(1.08);
+        }
+
+        .shrine-glow {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 120%, rgba(244, 205, 116, 0.4), transparent 70%);
+            pointer-events: none;
+        }
+
+        .shrine-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--maroon-deep);
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .shrine-sub {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 11.5px;
+            font-style: italic;
+            color: var(--saffron);
+            margin-top: 2px;
+            font-weight: 600;
         }
 
         .container::before {
@@ -346,13 +423,19 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: linear-gradient(135deg, rgba(63, 16, 10, 0.85), rgba(92, 26, 18, 0.85));
-            border: 1px solid rgba(217, 164, 65, 0.5);
-            border-radius: 14px;
-            padding: 8px 14px;
-            margin: 12px 0 18px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(135deg, rgba(44, 13, 9, 0.92), rgba(92, 26, 18, 0.92));
+            border: 2px solid rgba(217, 164, 65, 0.5);
+            border-radius: 16px;
+            padding: 10px 16px;
+            margin: 14px 0 20px;
+            box-shadow: 0 8px 24px rgba(30, 8, 4, 0.3), inset 0 0 15px rgba(217, 164, 65, 0.1);
             text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .bg-music-bar.playing {
+            border-color: var(--gold-bright);
+            box-shadow: 0 0 20px rgba(244, 205, 116, 0.35), 0 8px 24px rgba(30, 8, 4, 0.4);
         }
 
         .bg-music-info {
@@ -361,6 +444,25 @@
             gap: 8px;
             overflow: hidden;
             flex: 1;
+        }
+
+        .bg-music-badge {
+            font-size: 11px;
+            font-family: Arial, sans-serif;
+            padding: 3px 9px;
+            border-radius: 10px;
+            background: rgba(226, 113, 29, 0.25);
+            color: var(--gold-bright);
+            border: 1px solid var(--gold);
+            font-weight: bold;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .bg-music-badge.active {
+            background: var(--saffron);
+            color: #ffffff;
+            box-shadow: 0 0 8px rgba(226, 113, 29, 0.6);
         }
 
         .bg-music-icon {
@@ -880,8 +982,6 @@
 </head>
 
 <body>
-    <div class="petals" id="petals"></div>
-
     <div class="container">
         <div class="corner tl">🪷</div>
         <div class="corner tr">🪷</div>
@@ -902,15 +1002,51 @@
         <h1>Hare Krishna</h1>
         <div class="subtitle">Take a moment. Breathe. Remember Krishna And His Holy Names.</div>
 
+        <!-- DEVOTIONAL SANCTUARY GALLERY GRID -->
+        <div class="devotional-shrine-grid">
+            <div class="shrine-card">
+                <div class="shrine-img-wrap">
+                    <img src="images/krishna.png" alt="Lord Sri Krishna" class="shrine-img">
+                    <div class="shrine-glow"></div>
+                </div>
+                <div class="shrine-title">Lord Sri Krishna</div>
+                <div class="shrine-sub">Supreme Personality</div>
+            </div>
+            <div class="shrine-card">
+                <div class="shrine-img-wrap">
+                    <img src="images/prabhupada.png" alt="Srila Prabhupada" class="shrine-img">
+                    <div class="shrine-glow"></div>
+                </div>
+                <div class="shrine-title">Srila Prabhupada</div>
+                <div class="shrine-sub">Founder-Acharya</div>
+            </div>
+            <div class="shrine-card">
+                <div class="shrine-img-wrap">
+                    <img src="images/bhagavad_gita.png" alt="Srimad Bhagavad Gita" class="shrine-img">
+                    <div class="shrine-glow"></div>
+                </div>
+                <div class="shrine-title">Bhagavad Gita</div>
+                <div class="shrine-sub">Song Divine</div>
+            </div>
+            <div class="shrine-card">
+                <div class="shrine-img-wrap">
+                    <img src="images/jayapataka_swami.png" alt="Srila Jayapataka Swami Maharaj" class="shrine-img">
+                    <div class="shrine-glow"></div>
+                </div>
+                <div class="shrine-title">Jayapataka Swami</div>
+                <div class="shrine-sub">Guru Maharaja</div>
+            </div>
+        </div>
+
         <!-- BACKGROUND YOUTUBE MUSIC BAR -->
         <div id="bgMusicBar" class="bg-music-bar">
             <div class="bg-music-info">
-                <span class="bg-music-icon">🎵</span>
+                <span id="bgMusicBadge" class="bg-music-badge">🎵 Music</span>
                 <span id="bgMusicTitle" class="bg-music-title">Loading Background Kirtan...</span>
             </div>
             <div class="bg-music-controls">
                 <button id="bgPlayPauseBtn" class="bg-music-btn" title="Play/Pause Background Music">▶️</button>
-                <button id="bgNextBtn" class="bg-music-btn" title="Next Random Track">🔀 Next</button>
+                <button id="bgNextBtn" class="bg-music-btn" title="Next Track">🔀 Next</button>
                 <button id="bgManagerToggleBtn" class="bg-music-btn" title="Manage Background Links">⚙️ Links</button>
             </div>
         </div>

@@ -18,17 +18,17 @@ let ytPlayerState = -1; // -1: unstarted, 0: ended, 1: playing, 2: paused, 3: bu
 let isYtReady = false;
 let isShuffle = true; // Random mode enabled by default
 let isLoop = false;
+let currentlyLoadedVideoId = null;
 
 // Playlist State
 let activePlaylistType = "bg"; // "bg" or "video"
 let videoPlaylist = [];
 let bgPlaylist = [];
-let currentTrackIndex = 0; // For Video section
-let bgTrackIndex = 0;      // For Background Music section
+let currentTrackIndex = 0; // For Video section (randomized on load)
+let bgTrackIndex = 0;      // For Background Music section (randomized on load)
 let progressInterval = null;
-let playedIndicesHistory = [];
-let playedBgHistorySet = new Set();
 let playedVideoHistorySet = new Set();
+let playedBgHistorySet = new Set();
 
 function getActivePlaylist() {
     return activePlaylistType === "video" ? videoPlaylist : bgPlaylist;
@@ -49,7 +49,6 @@ function setActiveTrackIndex(idx) {
 /* ================= INITIALIZATION & EVENT BINDINGS ================= */
 document.addEventListener('DOMContentLoaded', () => {
     // UI Setup
-    initPetals();
     buildMala();
 
     // Mode Buttons
@@ -128,9 +127,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mic & Writing Controls
     document.getElementById('microphoneButton').addEventListener('click', toggleMicrophone);
-    document.getElementById("writingBox").addEventListener("input", function () {
-        document.getElementById("charCount").textContent = this.value.length;
-    });
+    const writingBox = document.getElementById("writingBox");
+    if (writingBox) {
+        writingBox.addEventListener("input", function () {
+            document.getElementById("charCount").textContent = this.value.length;
+        });
+    }
 
     // Load local cached playlists instantly and attempt immediate player initialization
     loadVideoPlaylistFromFile();
@@ -147,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const triggerBgAudio = () => {
         if (isYtReady && ytPlayer) {
             try {
-                if (typeof ytPlayer.playVideo === 'function') {
+                if (ytPlayerState !== YT.PlayerState.PLAYING && typeof ytPlayer.playVideo === 'function') {
                     ytPlayer.playVideo();
                 }
             } catch (e) { }
@@ -177,6 +179,7 @@ function initYouTubePlayer() {
     }
 
     const initialVideoId = activeList[idx].id;
+    currentlyLoadedVideoId = initialVideoId;
 
     const playerVarsObj = {
         'autoplay': 1,
@@ -210,14 +213,23 @@ function initYouTubePlayer() {
 function updatePlayPauseIcons() {
     const playPauseBtn = document.getElementById("playPauseBtn");
     const bgPlayPauseBtn = document.getElementById("bgPlayPauseBtn");
+    const bgBar = document.getElementById("bgMusicBar");
     const isPlaying = isYtReady && ytPlayer && ytPlayerState === YT.PlayerState.PLAYING;
 
     if (isPlaying) {
-        if (playPauseBtn) playPauseBtn.innerHTML = "⏸️ Pause";
-        if (bgPlayPauseBtn) bgPlayPauseBtn.innerHTML = "⏸️";
+        if (activePlaylistType === "video") {
+            if (playPauseBtn) playPauseBtn.innerHTML = "⏸️ Pause Video";
+            if (bgPlayPauseBtn) bgPlayPauseBtn.innerHTML = "▶️";
+            if (bgBar) bgBar.classList.remove("playing");
+        } else {
+            if (playPauseBtn) playPauseBtn.innerHTML = "▶️ Play Video";
+            if (bgPlayPauseBtn) bgPlayPauseBtn.innerHTML = "⏸️";
+            if (bgBar) bgBar.classList.add("playing");
+        }
     } else {
-        if (playPauseBtn) playPauseBtn.innerHTML = "▶️ Play";
+        if (playPauseBtn) playPauseBtn.innerHTML = "▶️ Play Video";
         if (bgPlayPauseBtn) bgPlayPauseBtn.innerHTML = "▶️";
+        if (bgBar) bgBar.classList.remove("playing");
     }
 }
 
@@ -238,11 +250,10 @@ function onPlayerReady(event) {
 function onPlayerStateChange(event) {
     ytPlayerState = event.data;
     updatePlayPauseIcons();
+    updateTrackDisplay();
 
     if (event.data === YT.PlayerState.PLAYING) {
         errorRetryCount = 0;
-        const promptEl = document.getElementById('autoplayPrompt');
-        if (promptEl) promptEl.style.display = 'none';
         startProgressTimer();
         const timerEl = document.getElementById("timer");
         if (timerEl) timerEl.style.color = "";
@@ -255,7 +266,7 @@ function onPlayerStateChange(event) {
                 ytPlayer.playVideo();
             }
         } else {
-            playNextTrack();
+            playNextTrack(activePlaylistType);
         }
     }
 }
@@ -266,14 +277,14 @@ function onPlayerError(event) {
     const activeList = getActivePlaylist();
     errorRetryCount++;
     if (errorRetryCount >= (activeList && activeList.length > 0 ? activeList.length : 3)) {
-        console.warn("All tracks in playlist returned error (e.g. Error 153 on file:// origin).");
-        showVideoFeedback("⚠️ YouTube restricts playback on file:// origin. Please load in chrome://extensions or Live Server.", "error");
+        console.warn("All tracks in playlist returned error.");
+        showVideoFeedback("⚠️ Video restricted or unavailable. Please check YouTube URL.", "error");
         errorRetryCount = 0;
         return;
     }
-    showVideoFeedback("⚠️ Video unplayable or restricted. Auto-skipping to next track...", "error");
+    showVideoFeedback("⚠️ Video unavailable. Auto-skipping to next track...", "error");
     setTimeout(() => {
-        playNextTrack();
+        playNextTrack(activePlaylistType);
     }, 1200);
 }
 
@@ -326,32 +337,49 @@ function populateBgPlaylistFromIDs(idsArray) {
     });
 }
 
+const DEFAULT_VIDEO_LINKS = [
+    "https://www.youtube.com/watch?v=84S6cWvV_cI",
+    "https://www.youtube.com/watch?v=73T2dYcIuYg",
+    "https://www.youtube.com/watch?v=a929vX4kM3M"
+];
+
+const DEFAULT_BG_LINKS = [
+    "https://www.youtube.com/watch?v=84S6cWvV_cI",
+    "https://www.youtube.com/watch?v=73T2dYcIuYg",
+    "https://www.youtube.com/watch?v=a929vX4kM3M"
+];
+
 async function loadVideoPlaylistFromFile() {
     let localCacheLoaded = false;
     const cachedLinks = localStorage.getItem("video_links_cache");
     const localTimestamp = parseInt(localStorage.getItem("video_links_timestamp") || "0", 10);
 
-    // Instant local playback from cache
     if (cachedLinks) {
         try {
             const parsed = JSON.parse(cachedLinks);
             if (Array.isArray(parsed) && parsed.length > 0) {
                 populateVideoPlaylistFromIDs(parsed);
-                if (videoPlaylist.length > 0) {
-                    currentTrackIndex = Math.floor(Math.random() * videoPlaylist.length);
-                    if (activePlaylistType === "video") playTrack(currentTrackIndex, "video");
-                }
-                renderVideoPlaylistUI();
                 localCacheLoaded = true;
             }
         } catch (e) { }
     }
 
-    // Background Cloud Sync - Check if Firestore timestamp is newer
+    if (!localCacheLoaded || videoPlaylist.length === 0) {
+        populateVideoPlaylistFromIDs(DEFAULT_VIDEO_LINKS);
+        localStorage.setItem("video_links_cache", JSON.stringify(DEFAULT_VIDEO_LINKS));
+    }
+
+    // Always pick a random starting song on page load/refresh
+    if (videoPlaylist.length > 0) {
+        currentTrackIndex = Math.floor(Math.random() * videoPlaylist.length);
+    }
+
+    renderVideoPlaylistUI();
+
     try {
         if (window.firebaseDb) {
             const doc = await window.firebaseDb.collection('playlists').doc('video_links').get();
-            if (doc.exists && doc.data().links) {
+            if (doc.exists && doc.data().links && doc.data().links.length > 0) {
                 const cloudLinks = doc.data().links;
                 const cloudTime = doc.data().updatedAt ? (doc.data().updatedAt.toMillis ? doc.data().updatedAt.toMillis() : new Date(doc.data().updatedAt).getTime()) : Date.now();
 
@@ -359,10 +387,8 @@ async function loadVideoPlaylistFromFile() {
                     localStorage.setItem("video_links_cache", JSON.stringify(cloudLinks));
                     localStorage.setItem("video_links_timestamp", cloudTime.toString());
                     populateVideoPlaylistFromIDs(cloudLinks);
-
-                    if (!localCacheLoaded && videoPlaylist.length > 0) {
+                    if (videoPlaylist.length > 0) {
                         currentTrackIndex = Math.floor(Math.random() * videoPlaylist.length);
-                        if (activePlaylistType === "video") playTrack(currentTrackIndex, "video");
                     }
                     renderVideoPlaylistUI();
                 }
@@ -376,28 +402,33 @@ async function loadBgPlaylistFromFile() {
     const cachedLinks = localStorage.getItem("bg_links_cache");
     const localTimestamp = parseInt(localStorage.getItem("bg_links_timestamp") || "0", 10);
 
-    // Instant local playback from cache
     if (cachedLinks) {
         try {
             const parsed = JSON.parse(cachedLinks);
             if (Array.isArray(parsed) && parsed.length > 0) {
                 populateBgPlaylistFromIDs(parsed);
-                if (bgPlaylist.length > 0) {
-                    bgTrackIndex = Math.floor(Math.random() * bgPlaylist.length);
-                    if (activePlaylistType === "bg") playTrack(bgTrackIndex, "bg");
-                }
-                renderBgPlaylistUI();
-                updateTrackDisplay();
                 localCacheLoaded = true;
             }
         } catch (e) { }
     }
 
-    // Background Cloud Sync - Check if Firestore timestamp is newer
+    if (!localCacheLoaded || bgPlaylist.length === 0) {
+        populateBgPlaylistFromIDs(DEFAULT_BG_LINKS);
+        localStorage.setItem("bg_links_cache", JSON.stringify(DEFAULT_BG_LINKS));
+    }
+
+    // Always pick a random starting background song on page load/refresh
+    if (bgPlaylist.length > 0) {
+        bgTrackIndex = Math.floor(Math.random() * bgPlaylist.length);
+    }
+
+    renderBgPlaylistUI();
+    updateTrackDisplay();
+
     try {
         if (window.firebaseDb) {
             const doc = await window.firebaseDb.collection('playlists').doc('background_music_links').get();
-            if (doc.exists && doc.data().links) {
+            if (doc.exists && doc.data().links && doc.data().links.length > 0) {
                 const cloudLinks = doc.data().links;
                 const cloudTime = doc.data().updatedAt ? (doc.data().updatedAt.toMillis ? doc.data().updatedAt.toMillis() : new Date(doc.data().updatedAt).getTime()) : Date.now();
 
@@ -405,10 +436,8 @@ async function loadBgPlaylistFromFile() {
                     localStorage.setItem("bg_links_cache", JSON.stringify(cloudLinks));
                     localStorage.setItem("bg_links_timestamp", cloudTime.toString());
                     populateBgPlaylistFromIDs(cloudLinks);
-
-                    if (!localCacheLoaded && bgPlaylist.length > 0) {
+                    if (bgPlaylist.length > 0) {
                         bgTrackIndex = Math.floor(Math.random() * bgPlaylist.length);
-                        if (activePlaylistType === "bg") playTrack(bgTrackIndex, "bg");
                     }
                     renderBgPlaylistUI();
                     updateTrackDisplay();
@@ -474,7 +503,7 @@ function addVideoLink(inputStr) {
         saveVideoPlaylist();
         renderVideoPlaylistUI();
         showVideoFeedback(`✅ Added ${addedCount} video(s) to playlist!`, "success");
-        playTrack(videoPlaylist.length - 1, "video");
+        loadAndPlayTrack("video", videoPlaylist.length - 1);
     } else {
         showVideoFeedback("❌ Invalid YouTube link or video already in playlist.", "error");
     }
@@ -484,7 +513,7 @@ function resetVideoPlaylistFromFile() {
     loadVideoPlaylistFromFile().then(() => {
         saveVideoPlaylist();
         renderVideoPlaylistUI();
-        if (videoPlaylist.length > 0) playTrack(0, "video");
+        if (videoPlaylist.length > 0) loadAndPlayTrack("video", 0);
         showVideoFeedback("🔄 Synced video playlist with Firebase Cloud Database", "success");
     });
 }
@@ -539,7 +568,7 @@ function renderVideoPlaylistUI() {
 
         li.querySelector(".play-item-btn").addEventListener("click", (e) => {
             e.stopPropagation();
-            playTrack(index, "video");
+            loadAndPlayTrack("video", index);
         });
 
         li.querySelector(".delete-item-btn").addEventListener("click", (e) => {
@@ -561,7 +590,7 @@ function removeVideoTrack(index) {
         renderVideoPlaylistUI();
         if (videoPlaylist.length > 0 && activePlaylistType === "video") {
             if (index === currentTrackIndex) {
-                playTrack(currentTrackIndex, "video");
+                loadAndPlayTrack("video", currentTrackIndex);
             }
         }
         showVideoFeedback("🗑️ Removed video track.", "error");
@@ -604,7 +633,7 @@ function addBgMusicLink(inputStr) {
         saveBgPlaylist();
         renderBgPlaylistUI();
         showBgFeedback(`✅ Added ${addedCount} background music track(s)!`, "success");
-        playTrack(bgPlaylist.length - 1, "bg");
+        loadAndPlayTrack("bg", bgPlaylist.length - 1);
     } else {
         showBgFeedback("❌ Invalid YouTube link or track already in list.", "error");
     }
@@ -668,7 +697,7 @@ function renderBgPlaylistUI() {
 
         li.querySelector(".play-item-btn").addEventListener("click", (e) => {
             e.stopPropagation();
-            playBgTrack(index);
+            loadAndPlayTrack("bg", index);
         });
 
         li.querySelector(".delete-item-btn").addEventListener("click", (e) => {
@@ -678,10 +707,6 @@ function renderBgPlaylistUI() {
 
         listEl.appendChild(li);
     });
-}
-
-function playBgTrack(index) {
-    playTrack(index, "bg");
 }
 
 function removeBgTrack(index) {
@@ -694,7 +719,7 @@ function removeBgTrack(index) {
         renderBgPlaylistUI();
         if (bgPlaylist.length > 0 && activePlaylistType === "bg") {
             if (index === bgTrackIndex) {
-                playTrack(bgTrackIndex, "bg");
+                loadAndPlayTrack("bg", bgTrackIndex);
             }
         }
         showBgFeedback("🗑️ Removed background track.", "error");
@@ -721,11 +746,7 @@ function fetchYouTubeTitle(videoId, target = "video") {
                         renderBgPlaylistUI();
                     }
                 }
-                const activeList = getActivePlaylist();
-                const currentIndex = getActiveTrackIndex();
-                if (activeList[currentIndex] && activeList[currentIndex].id === videoId) {
-                    updateTrackDisplay();
-                }
+                updateTrackDisplay();
             }
         })
         .catch(err => console.log("Failed to fetch title for video:", videoId, err));
@@ -763,30 +784,69 @@ function showBgFeedback(msg, type) {
 }
 
 /* ================= PLAYBACK CONTROLS ================= */
-function playNextTrack(type = null) {
+function loadAndPlayTrack(type, index) {
     if (type) activePlaylistType = type;
-    const activeList = getActivePlaylist();
-    if (!activeList || activeList.length === 0) return;
+    const list = getActivePlaylist();
+    if (!list || list.length === 0) return;
+
+    let validIndex = index;
+    if (validIndex < 0 || validIndex >= list.length) {
+        validIndex = 0;
+    }
+    setActiveTrackIndex(validIndex);
+    
+    const track = list[validIndex];
+    if (!track || !track.id) return;
+
+    updateTrackDisplay();
+    renderVideoPlaylistUI();
+    renderBgPlaylistUI();
+
+    if (isYtReady && ytPlayer) {
+        if (currentlyLoadedVideoId !== track.id) {
+            currentlyLoadedVideoId = track.id;
+            if (typeof ytPlayer.loadVideoById === 'function') {
+                ytPlayer.loadVideoById(track.id);
+            }
+        } else {
+            if (typeof ytPlayer.playVideo === 'function') {
+                ytPlayer.playVideo();
+            }
+        }
+    } else {
+        currentlyLoadedVideoId = track.id;
+        initYouTubePlayer();
+    }
+}
+
+function playTrack(index, type = null) {
+    loadAndPlayTrack(type || activePlaylistType, index);
+}
+
+function playNextTrack(type = null) {
+    const targetType = type || activePlaylistType;
+    activePlaylistType = targetType;
+    const list = getActivePlaylist();
+    if (!list || list.length === 0) return;
 
     const currentIndex = getActiveTrackIndex();
     let nextIndex;
 
     if (isShuffle) {
-        if (activeList.length === 1) {
+        if (list.length === 1) {
             nextIndex = 0;
         } else {
-            const historySet = activePlaylistType === "video" ? playedVideoHistorySet : playedBgHistorySet;
+            const historySet = targetType === "video" ? playedVideoHistorySet : playedBgHistorySet;
             historySet.add(currentIndex);
 
-            let available = activeList
+            let available = list
                 .map((_, idx) => idx)
                 .filter(idx => !historySet.has(idx));
 
             if (available.length === 0) {
-                // All songs in playlist have been played! Reset deck & exclude current song
                 historySet.clear();
                 historySet.add(currentIndex);
-                available = activeList
+                available = list
                     .map((_, idx) => idx)
                     .filter(idx => idx !== currentIndex);
             }
@@ -794,54 +854,39 @@ function playNextTrack(type = null) {
             nextIndex = available[Math.floor(Math.random() * available.length)];
         }
     } else {
-        nextIndex = (currentIndex + 1) % activeList.length;
+        nextIndex = (currentIndex + 1) % list.length;
     }
 
-    playTrack(nextIndex);
+    loadAndPlayTrack(targetType, nextIndex);
 }
 
 function playPrevTrack(type = null) {
-    if (type) activePlaylistType = type;
-    const activeList = getActivePlaylist();
-    if (!activeList || activeList.length === 0) return;
+    const targetType = type || activePlaylistType;
+    activePlaylistType = targetType;
+    const list = getActivePlaylist();
+    if (!list || list.length === 0) return;
 
     const currentIndex = getActiveTrackIndex();
-    let prevIndex;
-    if (playedIndicesHistory.length > 1) {
-        playedIndicesHistory.pop(); // Remove current track
-        prevIndex = playedIndicesHistory.pop();
-    } else {
-        prevIndex = (currentIndex - 1 + activeList.length) % activeList.length;
-    }
-
-    playTrack(prevIndex);
-}
-
-function playTrack(index, type = null) {
-    if (type) activePlaylistType = type;
-    const activeList = getActivePlaylist();
-    if (!activeList || index < 0 || index >= activeList.length) return;
-
-    setActiveTrackIndex(index);
-    playedIndicesHistory.push(index);
-    if (playedIndicesHistory.length > 50) playedIndicesHistory.shift();
-
-    const track = activeList[index];
-    updateTrackDisplay();
-    renderVideoPlaylistUI();
-    renderBgPlaylistUI();
-
-    if (isYtReady && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
-        ytPlayer.loadVideoById(track.id);
-    } else {
-        initYouTubePlayer();
-    }
+    const prevIndex = (currentIndex - 1 + list.length) % list.length;
+    loadAndPlayTrack(targetType, prevIndex);
 }
 
 function togglePlayPause(type = null) {
-    if (type) activePlaylistType = type;
+    const targetType = type || activePlaylistType;
+    const list = targetType === "video" ? videoPlaylist : bgPlaylist;
+    if (!list || list.length === 0) return;
+
+    const targetIndex = targetType === "video" ? currentTrackIndex : bgTrackIndex;
+    const track = list[targetIndex] || list[0];
+    if (!track) return;
+
+    if (activePlaylistType !== targetType || currentlyLoadedVideoId !== track.id) {
+        loadAndPlayTrack(targetType, targetIndex);
+        return;
+    }
+
     if (!isYtReady || !ytPlayer) {
-        initYouTubePlayer();
+        loadAndPlayTrack(targetType, targetIndex);
         return;
     }
 
@@ -850,7 +895,7 @@ function togglePlayPause(type = null) {
     } else {
         if (typeof ytPlayer.playVideo === 'function') ytPlayer.playVideo();
     }
-    setTimeout(updatePlayPauseIcons, 100);
+    setTimeout(updatePlayPauseIcons, 150);
 }
 
 function toggleShuffle() {
@@ -953,16 +998,39 @@ function formatTime(seconds) {
 }
 
 function updateTrackDisplay() {
-    const activeList = getActivePlaylist();
-    const currentIndex = getActiveTrackIndex();
-    const currentTrack = activeList[currentIndex];
-    if (!currentTrack) return;
+    const vTrack = videoPlaylist[currentTrackIndex];
+    const bgTrack = bgPlaylist[bgTrackIndex];
 
     const nameEl = document.getElementById("kirtanName");
     const bgNameEl = document.getElementById("bgMusicTitle");
+    const bgBadgeEl = document.getElementById("bgMusicBadge");
 
-    if (nameEl) nameEl.textContent = currentTrack.title;
-    if (bgNameEl) bgNameEl.textContent = currentTrack.title;
+    if (nameEl) {
+        if (vTrack) {
+            nameEl.textContent = vTrack.title;
+        } else {
+            nameEl.textContent = "No Video Loaded";
+        }
+    }
+
+    if (bgNameEl) {
+        if (bgTrack) {
+            const isBgPlaying = activePlaylistType === "bg" && isYtReady && ytPlayer && ytPlayerState === YT.PlayerState.PLAYING;
+            bgNameEl.textContent = bgTrack.title + (isBgPlaying ? "" : " (Paused)");
+        } else {
+            bgNameEl.textContent = "No Background Music Track";
+        }
+    }
+
+    if (bgBadgeEl) {
+        if (activePlaylistType === "bg" && isYtReady && ytPlayer && ytPlayerState === YT.PlayerState.PLAYING) {
+            bgBadgeEl.textContent = "🎵 Playing";
+            bgBadgeEl.className = "bg-music-badge active";
+        } else {
+            bgBadgeEl.textContent = "⏸️ Music";
+            bgBadgeEl.className = "bg-music-badge";
+        }
+    }
 }
 
 function updateIframeHost(mode) {
@@ -984,27 +1052,10 @@ function updateIframeHost(mode) {
 }
 
 /* ================= UI & DECORATIVE EFFECTS ================= */
-function initPetals() {
-    const layer = document.getElementById('petals');
-    if (!layer) return;
-    const glyphs = ['🪷', '🌸', '🕉️'];
-    const count = 14;
-    for (let i = 0; i < count; i++) {
-        const p = document.createElement('div');
-        p.className = 'petal';
-        p.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
-        p.style.left = Math.random() * 100 + 'vw';
-        p.style.fontSize = (14 + Math.random() * 16) + 'px';
-        p.style.setProperty('--drift', (Math.random() * 120 - 60) + 'px');
-        p.style.animationDuration = (10 + Math.random() * 14) + 's';
-        p.style.animationDelay = (-Math.random() * 20) + 's';
-        layer.appendChild(p);
-    }
-}
-
 function buildMala() {
     const mala = document.getElementById('mala');
     if (!mala) return;
+    mala.innerHTML = "";
     for (let i = 0; i < MALA_BEADS; i++) {
         const b = document.createElement('div');
         b.className = 'bead';
@@ -1087,22 +1138,6 @@ function startTimer() {
     updateProgress();
 
     timerInterval = setInterval(function () {
-        const activeList = getActivePlaylist();
-        const currentIndex = getActiveTrackIndex();
-        const bgNameEl = document.getElementById("bgMusicTitle");
-
-        if (ytPlayerState !== YT.PlayerState.PLAYING) {
-            document.getElementById("timer").style.color = "#e2711d";
-            if (bgNameEl && activeList[currentIndex]) {
-                bgNameEl.textContent = activeList[currentIndex].title + " (Click ▶️ to play)";
-            }
-        } else {
-            document.getElementById("timer").style.color = "";
-            if (bgNameEl && activeList[currentIndex]) {
-                bgNameEl.textContent = activeList[currentIndex].title;
-            }
-        }
-
         remaining--;
         updateTimer();
         updateProgress();
@@ -1120,25 +1155,32 @@ function startSession(mode) {
 function updateTimer() {
     const minutes = Math.floor(remaining / 60);
     const seconds = remaining % 60;
-    document.getElementById("timer").textContent =
-        String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+    const timerEl = document.getElementById("timer");
+    if (timerEl) {
+        timerEl.textContent = String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+    }
     saveTimerState();
 }
 
 function updateProgress() {
     const fraction = (SESSION_TIME - remaining) / SESSION_TIME;
     const offset = RING_CIRC * (1 - fraction);
-    document.getElementById("ringFg").style.strokeDashoffset = offset;
+    const ringFg = document.getElementById("ringFg");
+    if (ringFg) {
+        ringFg.style.strokeDashoffset = offset;
+    }
 }
 
 function showSection(id) {
     document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
+    const sec = document.getElementById(id);
+    if (sec) sec.classList.add("active");
 }
 
 function setActiveButton(id) {
     document.querySelectorAll(".mode-buttons button").forEach(b => b.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
+    const btn = document.getElementById(id);
+    if (btn) btn.classList.add("active");
 }
 
 /* ================= MODES ================= */
@@ -1148,13 +1190,8 @@ function startListen() {
     setActiveButton("listenBtn");
     updateIframeHost("listen");
 
-    if (isYtReady && ytPlayer) {
-        if (ytPlayerState !== YT.PlayerState.PLAYING) {
-            playTrack(currentTrackIndex, "video");
-        }
-    } else {
-        activePlaylistType = "video";
-        initYouTubePlayer();
+    if (videoPlaylist.length > 0) {
+        loadAndPlayTrack("video", currentTrackIndex);
     }
 }
 
@@ -1163,7 +1200,8 @@ function startWriting() {
     showSection("writeSection");
     setActiveButton("writeBtn");
     updateIframeHost("write");
-    document.getElementById("writingBox").focus();
+    const box = document.getElementById("writingBox");
+    if (box) box.focus();
 }
 
 function startMicMode() {
@@ -1202,8 +1240,11 @@ function startRecognition() {
 
     recognition.onstart = function () {
         microphoneRunning = true;
-        document.getElementById("microphoneButton").classList.add("listening");
-        document.getElementById("microphoneButton").textContent = "🔴 Listening...";
+        const btn = document.getElementById("microphoneButton");
+        if (btn) {
+            btn.classList.add("listening");
+            btn.textContent = "🔴 Listening...";
+        }
     };
 
     recognition.onresult = function (event) {
@@ -1211,11 +1252,16 @@ function startRecognition() {
         for (let i = event.resultIndex; i < event.results.length; i++) {
             text += event.results[i][0].transcript + " ";
         }
-        document.getElementById("heardText").textContent = "Heard: " + text.trim();
+        const heardEl = document.getElementById("heardText");
+        if (heardEl) heardEl.textContent = "Heard: " + text.trim();
+
         const normalized = text.toLowerCase().replace(/[^\w\s]/g, "");
         if (normalized.includes("hare krishna") || normalized.includes("harekrishna") || normalized.includes("hare krsna")) {
             chantCount++;
-            document.getElementById("chantCount").textContent = chantCount % MALA_BEADS === 0 ? MALA_BEADS : chantCount % MALA_BEADS;
+            const chantEl = document.getElementById("chantCount");
+            if (chantEl) {
+                chantEl.textContent = chantCount % MALA_BEADS === 0 ? MALA_BEADS : chantCount % MALA_BEADS;
+            }
             lightBead();
         }
     };
@@ -1234,8 +1280,11 @@ function startRecognition() {
 function stopRecognition() {
     microphoneRunning = false;
     if (recognition) { try { recognition.stop(); } catch (e) { } }
-    document.getElementById("microphoneButton").classList.remove("listening");
-    document.getElementById("microphoneButton").textContent = "🎙️ Start Chanting";
+    const btn = document.getElementById("microphoneButton");
+    if (btn) {
+        btn.classList.remove("listening");
+        btn.textContent = "🎙️ Start Chanting";
+    }
 }
 
 /* ================= FINISH ================= */
@@ -1252,12 +1301,15 @@ function finishSession() {
         ytPlayer.pauseVideo();
     }
 
-    document.getElementById("success").style.display = "block";
+    const succ = document.getElementById("success");
+    if (succ) succ.style.display = "block";
     localStorage.removeItem("krishnaSessionRemaining");
 
     try { localStorage.setItem("krishnaSessionCompleted", Date.now()); } catch (e) { }
 
-    if (document.exitFullscreen) {
-        document.exitFullscreen().catch(err => console.log(err));
+    if (document.fullscreenElement && typeof document.exitFullscreen === 'function') {
+        try {
+            document.exitFullscreen().catch(err => console.log("Fullscreen exit:", err));
+        } catch (e) { }
     }
 }
