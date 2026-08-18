@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Search Keyword Blocker",
+  "version": "1.0",
+  "description": "Blocks configured keywords in search URLs.",
+  "permissions": [
+    "tabs",
+    "storage",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "index.html",
+        "js/app.js",
+        "js/firebase-config.js",
+        "js/firebase-app-compat.js",
+        "js/firebase-firestore-compat.js",
+        "js/www-widgetapi.js",
+        "js/iframe_api.js",
+        "config/keywords.txt"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}

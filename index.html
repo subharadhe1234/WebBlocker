@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hare Krishna — A Moment of Remembrance</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Yatra+One&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --maroon: #5c1a12;
+            --maroon-deep: #3f100a;
+            --gold: #d9a441;
+            --gold-bright: #f4cd74;
+            --saffron: #e2711d;
+            --teal: #0e5e5c;
+            --lotus: #c94f6d;
+            --cream: #fbf1dc;
+            --cream-dim: #f0e2c4;
+            --ink: #4a2410;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--ink);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            position: relative;
+            overflow-x: hidden;
+            background:
+                radial-gradient(circle at 20% 10%, rgba(244, 205, 116, 0.35), transparent 40%),
+                radial-gradient(circle at 85% 90%, rgba(14, 94, 92, 0.25), transparent 45%),
+                linear-gradient(160deg, #2c0d09 0%, #5c1a12 38%, #7a2712 65%, #c46a1f 100%);
+            background-attachment: fixed;
+        }
+
+        .petals {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .petal {
+            position: absolute;
+            top: -40px;
+            font-size: 22px;
+            opacity: .55;
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .25));
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-5vh) translateX(0) rotate(0deg);
+            }
+
+            100% {
+                transform: translateY(105vh) translateX(var(--drift, 40px)) rotate(340deg);
+            }
+        }
+
+        .container {
+            width: min(680px, 100%);
+            background: linear-gradient(180deg, rgba(255, 250, 238, .97), rgba(251, 241, 220, .97));
+            border-radius: 26px;
+            padding: 40px 34px 34px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 30px 90px rgba(30, 8, 4, .55), 0 0 0 1px rgba(217, 164, 65, .4);
+            border: 3px solid transparent;
+            background-clip: padding-box;
+        }
+
+        .container::before {
+            content: "";
+            position: absolute;
+            inset: -3px;
+            border-radius: 28px;
+            padding: 3px;
+            background: linear-gradient(135deg, var(--gold-bright), var(--saffron), var(--gold), var(--teal), var(--gold-bright));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            z-index: -1;
+            opacity: .9;
+        }
+
+        .corner {
+            position: absolute;
+            font-size: 26px;
+            opacity: .55;
+            color: var(--gold);
+        }
+
+        .corner.tl {
+            top: 10px;
+            left: 14px;
+        }
+
+        .corner.tr {
+            top: 10px;
+            right: 14px;
+            transform: scaleX(-1);
+        }
+
+        .diya-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 4px;
+        }
+
+        .diya {
+            width: 70px;
+            height: auto;
+        }
+
+        .flame {
+            transform-origin: 50% 100%;
+            animation: flicker 2.4s ease-in-out infinite;
+        }
+
+        @keyframes flicker {
+
+            0%,
+            100% {
+                transform: scaleY(1) scaleX(1) rotate(0deg);
+            }
+
+            25% {
+                transform: scaleY(1.08) scaleX(.95) rotate(-2deg);
+            }
+
+            50% {
+                transform: scaleY(.94) scaleX(1.05) rotate(1.5deg);
+            }
+
+            75% {
+                transform: scaleY(1.05) scaleX(.97) rotate(-1deg);
+            }
+        }
+
+        .om {
+            font-family: 'Yatra One', serif;
+            font-size: 26px;
+            color: var(--teal);
+            opacity: .8;
+            margin: 2px 0 6px;
+        }
+
+        h1 {
+            font-family: 'Cinzel Decorative', serif;
+            margin: 4px 0 2px;
+            font-size: clamp(30px, 6vw, 42px);
+            background: linear-gradient(180deg, var(--saffron), var(--maroon));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            font-size: 19px;
+            font-style: italic;
+            color: var(--maroon);
+            opacity: .85;
+            margin-bottom: 18px;
+        }
+
+        .mantra {
+            font-size: clamp(19px, 3.4vw, 23px);
+            line-height: 1.75;
+            color: var(--maroon-deep);
+            font-weight: 600;
+            margin: 18px 0;
+            padding: 14px 10px;
+            border-top: 1px solid rgba(217, 164, 65, .5);
+            border-bottom: 1px solid rgba(217, 164, 65, .5);
+        }
+
+        .block-message {
+            background: linear-gradient(135deg, #fff2cf, #fbe4b0);
+            padding: 16px 18px;
+            border-radius: 16px;
+            margin-bottom: 22px;
+            font-family: Arial, sans-serif;
+            color: #6b451a;
+            font-size: 14.5px;
+            border: 1px solid rgba(217, 164, 65, .5);
+        }
+
+        .ring-wrap {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            margin: 10px auto 8px;
+        }
+
+        .ring-wrap svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .ring-bg {
+            fill: none;
+            stroke: rgba(217, 164, 65, .25);
+            stroke-width: 8;
+        }
+
+        .ring-fg {
+            fill: none;
+            stroke: url(#ringGradient);
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s linear;
+        }
+
+        .ring-center {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timer {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 40px;
+            font-weight: 700;
+            color: var(--maroon-deep);
+            transition: color 0.3s;
+        }
+
+        .timer-label {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--teal);
+            margin-top: 2px;
+        }
+
+        .chakra {
+            position: absolute;
+            inset: -14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            animation: spin 40s linear infinite;
+            opacity: .35;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .mode-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 26px 0 8px;
+        }
+
+        button {
+            border: none;
+            padding: 14px 8px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16px;
+            background: #fff3d6;
+            color: var(--maroon-deep);
+            border: 1.5px solid #e4c07d;
+            transition: .2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(100, 60, 0, .2);
+        }
+
+        button.active {
+            background: linear-gradient(135deg, var(--saffron), var(--maroon));
+            color: #fff6e2;
+            border-color: transparent;
+            box-shadow: 0 8px 20px rgba(92, 26, 18, .4);
+        }
+
+        .section {
+            display: none;
+            margin-top: 18px;
+            animation: fadeIn .5s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .kirtan-title {
+            font-size: 20px;
+            color: var(--gold-bright);
+            margin-bottom: 12px;
+            font-style: italic;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            word-break: break-word;
+        }
+
+        /* ================= BACKGROUND YOUTUBE MUSIC BAR ================= */
+        .bg-music-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(135deg, rgba(63, 16, 10, 0.85), rgba(92, 26, 18, 0.85));
+            border: 1px solid rgba(217, 164, 65, 0.5);
+            border-radius: 14px;
+            padding: 8px 14px;
+            margin: 12px 0 18px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            text-align: left;
+        }
+
+        .bg-music-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .bg-music-icon {
+            font-size: 16px;
+        }
+
+        .bg-music-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--gold-bright);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .bg-music-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .bg-music-btn {
+            background: #fff3d6;
+            color: var(--maroon-deep);
+            border: 1px solid #d9a441;
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'Cormorant Garamond', serif;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .bg-music-btn:hover {
+            transform: scale(1.05);
+            background: #ffffff;
+        }
+
+        /* ================= YOUTUBE MUSIC PLAYER & PLAYLIST STYLES ================= */
+        .player-card {
+            background: linear-gradient(160deg, rgba(35, 12, 8, 0.95), rgba(74, 24, 16, 0.95));
+            border: 2px solid rgba(217, 164, 65, 0.6);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(217, 164, 65, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .player-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%;
+            background: #000;
+            border-radius: 14px;
+            overflow: hidden;
+            margin: 14px 0;
+            border: 1px solid rgba(244, 205, 116, 0.3);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        .player-wrapper iframe,
+        #ytIframeContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .player-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, #fff3d6, #f7dfa7);
+            color: var(--maroon-deep);
+            border: 1.5px solid #d9a441;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(217, 164, 65, 0.3);
+            background: #ffffff;
+        }
+
+        .control-btn.play-btn {
+            background: linear-gradient(135deg, var(--saffron), var(--maroon));
+            color: #fff6e2;
+            border-color: var(--gold-bright);
+            padding: 12px 24px;
+            font-size: 16px;
+            box-shadow: 0 6px 20px rgba(226, 113, 29, 0.4);
+        }
+
+        .control-btn.active {
+            background: linear-gradient(135deg, var(--teal), #063d3b);
+            color: #fff;
+            border-color: var(--gold-bright);
+            box-shadow: 0 0 12px rgba(14, 94, 92, 0.6);
+        }
+
+        .progress-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+            padding: 0 6px;
+        }
+
+        .time-text {
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            color: var(--gold-bright);
+            min-width: 38px;
+        }
+
+        .track-slider, .volume-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .track-slider::-webkit-slider-thumb, .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--gold-bright);
+            cursor: pointer;
+            box-shadow: 0 0 6px rgba(0,0,0,0.5);
+            transition: transform 0.1s ease;
+        }
+
+        .track-slider::-webkit-slider-thumb:hover, .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+        }
+
+        .volume-bar-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 0 6px;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            font-size: 18px;
+            color: var(--gold-bright);
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        /* PLAYLIST MANAGER STYLES */
+        .playlist-card {
+            background: linear-gradient(180deg, #fffaf0, #f8eed7);
+            border: 2px solid #e4c07d;
+            border-radius: 18px;
+            padding: 20px;
+            margin-top: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            text-align: left;
+        }
+
+        .playlist-heading {
+            margin: 0 0 14px 0;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 18px;
+            color: var(--maroon-deep);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .add-link-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .yt-input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1.5px solid #dfbd79;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16px;
+            background: #fff;
+            color: var(--maroon-deep);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .yt-input:focus {
+            border-color: var(--saffron);
+            box-shadow: 0 0 8px rgba(226, 113, 29, 0.3);
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, var(--teal), #094745);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 18px;
+            font-weight: 700;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(14, 94, 92, 0.3);
+        }
+
+        .link-feedback {
+            font-size: 13.5px;
+            font-family: Arial, sans-serif;
+            margin-bottom: 10px;
+            min-height: 18px;
+            font-weight: 600;
+        }
+
+        .link-feedback.success {
+            color: #1e7e34;
+        }
+
+        .link-feedback.error {
+            color: #d9534f;
+        }
+
+        .playlist-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .secondary-btn {
+            background: #fff3d6;
+            color: var(--maroon-deep);
+            border: 1px solid #d9a441;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .secondary-btn.danger {
+            background: #fdf2f2;
+            color: #b5241a;
+            border-color: #e0b0b0;
+        }
+
+        .playlist-scroll-container {
+            max-height: 220px;
+            overflow-y: auto;
+            border: 1px solid rgba(217, 164, 65, 0.3);
+            border-radius: 12px;
+            background: #fff;
+            padding: 6px;
+        }
+
+        .playlist-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .playlist-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border-bottom: 1px solid #f0e2c4;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .playlist-item:last-child {
+            border-bottom: none;
+        }
+
+        .playlist-item:hover {
+            background: #fffdf5;
+        }
+
+        .playlist-item.playing {
+            background: #fff4d6;
+            border-left: 4px solid var(--saffron);
+        }
+
+        .item-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+
+        .item-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--maroon-deep);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .playing-badge {
+            font-size: 12px;
+            font-family: Arial, sans-serif;
+            color: var(--saffron);
+            font-weight: bold;
+        }
+
+        .item-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .item-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px 6px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .item-btn:hover {
+            background: rgba(0, 0, 0, 0.06);
+        }
+
+        textarea {
+            width: 100%;
+            height: 170px;
+            resize: none;
+            padding: 18px;
+            border-radius: 15px;
+            border: 2px solid #dfbd79;
+            outline: none;
+            font-size: 20px;
+            font-family: 'Cormorant Garamond', serif;
+            background: repeating-linear-gradient(#fffaf0, #fffaf0 33px, #f1e2bd 34px);
+            line-height: 34px;
+            color: var(--maroon-deep);
+        }
+
+        textarea:focus {
+            border-color: var(--saffron);
+        }
+
+        .counter {
+            margin-top: 10px;
+            color: var(--teal);
+            font-family: Arial;
+            font-size: 14px;
+        }
+
+        .mic-button {
+            font-size: 18px;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, var(--teal), #073d3b);
+            color: #fdf1d6;
+            border: none;
+        }
+
+        .mic-button.listening {
+            background: linear-gradient(135deg, #b52b22, #7a170f);
+            animation: pulse 1.2s infinite;
+        }
+
+        @keyframes pulse {
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(181, 43, 34, .15);
+            }
+        }
+
+        .status {
+            padding: 12px;
+            margin-top: 14px;
+            background: #fff4d6;
+            border-radius: 12px;
+            color: #70470e;
+            font-family: Arial;
+            font-size: 13.5px;
+            border: 1px solid rgba(217, 164, 65, .4);
+        }
+
+        .heard {
+            min-height: 30px;
+            margin-top: 12px;
+            font-size: 17px;
+            color: var(--maroon-deep);
+            font-style: italic;
+        }
+
+        .mala {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            max-width: 320px;
+            margin: 16px auto 4px;
+        }
+
+        .bead {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 30%, #e9d3a4, #a8763a 70%, #6b4620);
+            opacity: .35;
+            transition: opacity .3s, transform .3s, box-shadow .3s;
+        }
+
+        .bead.lit {
+            opacity: 1;
+            transform: scale(1.15);
+            box-shadow: 0 0 8px rgba(244, 205, 116, .9);
+            background: radial-gradient(circle at 35% 30%, #fff2c2, var(--gold-bright) 60%, var(--saffron));
+        }
+
+        .chant-count-label {
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            color: var(--maroon);
+            margin-top: 4px;
+        }
+
+        .success {
+            display: none;
+            margin-top: 22px;
+            padding: 24px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #fff0bd, #f6d488);
+            color: var(--maroon-deep);
+            font-size: 21px;
+            font-weight: 700;
+            font-family: 'Cinzel Decorative', serif;
+            border: 1px solid var(--gold);
+            animation: fadeIn .6s ease;
+        }
+
+        .footer {
+            margin-top: 22px;
+            color: #a9793f;
+            font-size: 14px;
+            font-style: italic;
+        }
+
+        @media(max-width:600px) {
+            .container {
+                padding: 30px 20px 26px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .mode-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .ring-wrap {
+                width: 190px;
+                height: 190px;
+            }
+
+            .timer {
+                font-size: 34px;
+            }
+
+            .add-link-form {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="petals" id="petals"></div>
+
+    <div class="container">
+        <div class="corner tl">🪷</div>
+        <div class="corner tr">🪷</div>
+
+        <div class="diya-wrap">
+            <svg class="diya" viewBox="0 0 100 100">
+                <ellipse cx="50" cy="72" rx="34" ry="10" fill="#8a5a24" />
+                <ellipse cx="50" cy="68" rx="34" ry="10" fill="#c98a3a" />
+                <ellipse cx="50" cy="66" rx="26" ry="6" fill="#5c3413" />
+                <g class="flame">
+                    <path d="M50 62 C40 50 42 38 50 25 C58 38 60 50 50 62 Z" fill="#ffb238" />
+                    <path d="M50 58 C44 49 45 41 50 32 C55 41 56 49 50 58 Z" fill="#fff1b8" />
+                </g>
+            </svg>
+        </div>
+        <div class="om">ॐ</div>
+
+        <h1>Hare Krishna</h1>
+        <div class="subtitle">Take a moment. Breathe. Remember Krishna.</div>
+
+        <!-- BACKGROUND YOUTUBE MUSIC BAR -->
+        <div id="bgMusicBar" class="bg-music-bar">
+            <div class="bg-music-info">
+                <span class="bg-music-icon">🎵</span>
+                <span id="bgMusicTitle" class="bg-music-title">Loading Background Kirtan...</span>
+            </div>
+            <div class="bg-music-controls">
+                <button id="bgPlayPauseBtn" class="bg-music-btn" title="Play/Pause Background Music">▶️</button>
+                <button id="bgNextBtn" class="bg-music-btn" title="Next Random Track">🔀 Next</button>
+                <button id="bgManagerToggleBtn" class="bg-music-btn" title="Manage Background Links">⚙️ Links</button>
+            </div>
+        </div>
+
+        <!-- EXPANDABLE BACKGROUND MUSIC PLAYLIST MANAGER -->
+        <div id="bgMusicManagerCard" class="playlist-card" style="display:none; margin-bottom: 20px; border-color: #d4a359;">
+            <h3 class="playlist-heading">🎵 Background Music Playlist Manager (Firebase)</h3>
+            <p class="helper-text" style="font-size:13px; color:#8a5a24; margin-bottom:10px;">
+                Synchronized with Firebase Cloud Database. Add or delete links below to update your background music.
+            </p>
+            <div class="add-link-form">
+                <input type="text" id="bgLinkInput" placeholder="Paste YouTube link for Background Music..." class="yt-input">
+                <button id="addBgLinkBtn" class="add-btn">➕ Add Music</button>
+            </div>
+            <div id="bgLinkFeedback" class="link-feedback"></div>
+
+            <div class="playlist-actions">
+                <button id="resetBgPlaylistBtn" class="secondary-btn">🔄 Sync Firebase</button>
+                <button id="exportBgTxtBtn" class="secondary-btn" title="Export updated links to file">📥 Export .txt</button>
+                <button id="clearBgPlaylistBtn" class="secondary-btn danger">🗑️ Clear All</button>
+            </div>
+
+            <div class="playlist-scroll-container">
+                <ul id="bgPlaylistItems" class="playlist-list"></ul>
+            </div>
+        </div>
+
+        <!-- HIDDEN HOST FOR BACKGROUND YOUTUBE IFRAME -->
+        <div id="bgYtPlayerHost" style="position:fixed; top:0; left:0; width:200px; height:200px; opacity:0.01; z-index:-9999; pointer-events:none; overflow:hidden;">
+            <div id="ytIframeContainer"></div>
+        </div>
+
+        <div class="mantra">
+            Hare Krishna Hare Krishna<br>Krishna Krishna Hare Hare<br>
+            Hare Rama Hare Rama<br>Rama Rama Hare Hare
+        </div>
+
+        <div class="block-message">
+            🚫 <b>Search Blocked</b><br><br>
+            This search contains a blocked keyword.<br><br>
+            Spend five peaceful minutes chanting or remembering Krishna before continuing.
+        </div>
+
+        <!-- MANDALA TIMER -->
+        <div class="ring-wrap">
+            <div class="chakra">🕉️</div>
+            <svg viewBox="0 0 220 220">
+                <defs>
+                    <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#f4cd74" />
+                        <stop offset="50%" stop-color="#e2711d" />
+                        <stop offset="100%" stop-color="#5c1a12" />
+                    </linearGradient>
+                </defs>
+                <circle class="ring-bg" cx="110" cy="110" r="98"></circle>
+                <circle class="ring-fg" id="ringFg" cx="110" cy="110" r="98" stroke-dasharray="615.75"
+                    stroke-dashoffset="0"></circle>
+            </svg>
+            <div class="ring-center">
+                <div class="timer" id="timer">05:00</div>
+                <div class="timer-label">remaining</div>
+            </div>
+        </div>
+
+        <!-- MODES -->
+        <div class="mode-buttons">
+            <button id="listenBtn">📺<br>Watch Video</button>
+            <button id="writeBtn">✍️<br>Write Hare Krishna</button>
+            <button id="micBtn">🎙️<br>Chant</button>
+        </div>
+
+        <!-- YOUTUBE VIDEO EMBEDDED PLAYER & PLAYLIST MANAGER -->
+        <div id="listenSection" class="section">
+            <div class="player-card">
+                <div class="kirtan-title">Now Playing Video: <b id="kirtanName">Loading Video...</b></div>
+
+                <!-- Embedded YouTube Player Viewport -->
+                <div id="listenPlayerWrapper" class="player-wrapper">
+                    <!-- ytIframeContainer dynamically moved here in Watch Video mode -->
+                </div>
+
+                <!-- Playback Control Bar -->
+                <div class="player-controls">
+                    <button id="shuffleBtn" class="control-btn active" title="Toggle Random/Shuffle Order">🔀 Shuffle ON</button>
+                    <button id="prevTrackBtn" class="control-btn" title="Previous Track">⏮️ Prev</button>
+                    <button id="playPauseBtn" class="control-btn play-btn" title="Play or Pause Track">▶️ Play</button>
+                    <button id="nextTrackBtn" class="control-btn" title="Next Track">Next ⏭️</button>
+                    <button id="loopBtn" class="control-btn" title="Toggle Loop Track/Playlist">🔁 Loop</button>
+                </div>
+
+                <!-- Progress & Time Bar -->
+                <div class="progress-bar-container">
+                    <span id="currentTimeLabel" class="time-text">0:00</span>
+                    <input type="range" id="trackSeekBar" min="0" max="100" value="0" class="track-slider">
+                    <span id="durationLabel" class="time-text">0:00</span>
+                </div>
+
+                <!-- Volume Bar -->
+                <div class="volume-bar-container">
+                    <button id="muteToggleBtn" class="icon-btn">🔊</button>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="80" class="volume-slider">
+                </div>
+            </div>
+
+            <!-- YouTube Link Input & Video Playlist Manager -->
+            <div class="playlist-card">
+                <h3 class="playlist-heading">📺 YouTube Video Playlist Manager (Firebase)</h3>
+                <p class="helper-text" style="font-size:13px; color:#8a5a24; margin-bottom:10px;">
+                    Synchronized with Firebase Cloud Database. Add or delete links below to update your video section.
+                </p>
+                <div class="add-link-form">
+                    <input type="text" id="ytLinkInput" placeholder="Paste YouTube link for Video Section..." class="yt-input">
+                    <button id="addLinkBtn" class="add-btn">➕ Add Video</button>
+                </div>
+                <div id="linkFeedback" class="link-feedback"></div>
+
+                <div class="playlist-actions">
+                    <button id="resetPlaylistBtn" class="secondary-btn">🔄 Sync Firebase</button>
+                    <button id="exportVideoTxtBtn" class="secondary-btn" title="Export updated links to file">📥 Export .txt</button>
+                    <button id="clearPlaylistBtn" class="secondary-btn danger">🗑️ Clear All</button>
+                </div>
+
+                <div class="playlist-scroll-container">
+                    <ul id="playlistItems" class="playlist-list"></ul>
+                </div>
+            </div>
+
+            <div class="status">Music plays directly in this player in random/shuffle mode. Timer pauses if music is paused!</div>
+        </div>
+
+        <!-- WRITING -->
+        <div id="writeSection" class="section">
+            <textarea id="writingBox" placeholder="Write Hare Krishna here..."></textarea>
+            <div class="counter">Write continuously for five minutes. Characters: <b id="charCount">0</b></div>
+        </div>
+
+        <!-- MICROPHONE -->
+        <div id="micSection" class="section">
+            <button id="microphoneButton" class="mic-button">🎙️ Start Chanting</button>
+            <div class="status">Allow microphone access. Chant: <b>Hare Krishna</b>. The browser will recognize your
+                voice.</div>
+            <div class="heard" id="heardText">Waiting for chanting...</div>
+            <div class="mala" id="mala"></div>
+            <div class="chant-count-label">Beads turned: <b id="chantCount">0</b> / 27</div>
+        </div>
+
+        <!-- SUCCESS -->
+        <div id="success" class="success">🪷 Hare Krishna! 🪷<br><br>Five minutes completed.<br><br>You may continue
+            now.</div>
+        <div class="footer">🪷 Hare Krishna • Hare Rama 🪷</div>
+    <!-- Core Scripts -->
+    <script src="js/firebase-app-compat.js"></script>
+    <script src="js/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/iframe_api.js"></script>
+</body>
+</html>
